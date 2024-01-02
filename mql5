@@ -1,0 +1,67 @@
+
+// Trade Master MT4 - Trading Robot
+// Developer's Site: forexroboteasy.com
+// Development Name: Forex Robot Easy Team
+
+// Import necessary libraries
+#include <Trade\Trade.mqh>
+
+// Define constants
+#define MAX_ORDERS 100
+
+// Define global variables
+CTrade Trade;
+int TotalOrders;
+
+// Initialize the expert advisor
+int OnInit()
+{
+   // Initialize the trade object
+   Trade.Init();
+
+   // Get the total number of open orders
+   TotalOrders = Trade.PositionsTotal();
+
+   return(INIT_SUCCEEDED);
+}
+
+// Execute trading logic
+void OnTick()
+{
+   // Check if there are any open orders
+   if(TotalOrders > 0)
+   {
+      // Loop through all open orders
+      for(int i=0; i<TotalOrders; i++)
+      {
+         // Close each open order
+         Trade.PositionClose(i);
+      }
+   }
+   else
+   {
+      // Place new pending orders
+      for(int i=0; i<MAX_ORDERS; i++)
+      {
+         // Place a buy limit order
+         Trade.PositionAdd(POSITION_TYPE_BUY_LIMIT, Symbol(), 1.0, Ask-10*Point, 0, 0, 0, 'Buy Limit');
+
+         // Place a sell limit order
+         Trade.PositionAdd(POSITION_TYPE_SELL_LIMIT, Symbol(), 1.0, Bid+10*Point, 0, 0, 0, 'Sell Limit');
+      }
+   }
+}
+
+// Deinitialize the expert advisor
+void OnDeinit(const int reason)
+{
+   // Clean up any remaining open orders
+   for(int i=0; i<TotalOrders; i++)
+   {
+      // Delete each pending order
+      Trade.PositionDelete(i);
+   }
+
+   // Deinitialize the trade object
+   Trade.Deinit();
+}
